@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logarithm Quiz Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+      color: #ffffff;
+      text-align: center;
+      padding: 50px;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://www.transparenttextures.com/patterns/stardust.png');
+      opacity: 0.1;
+      z-index: -1;
+    }
+
+    #game {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      max-width: 600px;
+      margin: auto;
+      backdrop-filter: blur(8px);
+    }
+
+    h1, h2 {
+      color: #00ffe5;
+      text-shadow: 0 0 5px #00ffe5, 0 0 10px #00ffe5;
+    }
+
+    p {
+      font-size: 18px;
+    }
+
+    button {
+      background-color: #1e90ff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 20px auto; /* Increased margin between buttons */
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(30, 144, 255, 0.4);
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #00bfff;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1>Logarithm Multiplayer Game</h1>
+    <p id="turn"></p>
+    <p id="question"></p>
+    <div id="options"></div>
+  </div>
+  <script>
+    const questions = [
+      {
+        question: "What is log₁₀(1000)?",
+        options: ["2", "3", "4", "1"],
+        answer: "3"
+      },
+      {
+        question: "If log₂(x) = 5, what is x?",
+        options: ["32", "10", "25", "64"],
+        answer: "32"
+      },
+      {
+        question: "Simplify: log₃(81)",
+        options: ["4", "3", "2", "5"],
+        answer: "4"
+      },
+      {
+        question: "logₐ(a⁷) = ?",
+        options: ["1", "a", "7", "a⁷"],
+        answer: "7"
+      },
+      {
+        question: "What is log₁₀(1)?",
+        options: ["0", "1", "10", "-1"],
+        answer: "0"
+      },
+      {
+        question: "If log₅(25) = x, what is x?",
+        options: ["1", "2", "3", "4"],
+        answer: "2"
+      },
+      {
+        question: "Simplify: log₂(8) + log₂(4)",
+        options: ["3", "4", "5", "6"],
+        answer: "5"
+      },
+      {
+        question: "What is the value of log₁₀(100)?",
+        options: ["1", "10", "2", "3"],
+        answer: "2"
+      },
+      {
+        question: "If log₄(64) = x, what is x?",
+        options: ["2", "4", "3.5", "3"],
+        answer: "3"
+      }
+    ];
+
+    let currentPlayer = 0;
+    let scores = [0, 0];
+    let currentQuestion = 0;
+
+    function displayQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("question").textContent = q.question;
+      const options = document.getElementById("options");
+      options.innerHTML = "";
+      q.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => selectAnswer(opt);
+        options.appendChild(btn);
+      });
+      document.getElementById("turn").textContent = `Player ${currentPlayer + 1}'s turn`;
+    }
+
+    function selectAnswer(option) {
+      const correct = questions[currentQuestion].answer;
+      if (option === correct) scores[currentPlayer]++;
+      currentPlayer = (currentPlayer + 1) % 2;
+      currentQuestion++;
+
+      if (currentQuestion >= questions.length) {
+        endGame();
+      } else {
+        displayQuestion();
+      }
+    }
+
+    function endGame() {
+      document.getElementById("game").innerHTML = `
+        <h2>Game Over</h2>
+        <p>Player 1 Score: ${scores[0]}</p>
+        <p>Player 2 Score: ${scores[1]}</p>
+        <p>${scores[0] === scores[1] ? "It's a tie!" : scores[0] > scores[1] ? "Player 1 wins!" : "Player 2 wins!"}</p>
+      `;
+    }
+
+    window.onload = displayQuestion;
+  </script>
+</body>
+</html>
