@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Logarithm Quiz Game</title>
   <style>
+    /* (Same CSS as before, unchanged to preserve original UI) */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
@@ -90,17 +91,72 @@
     <p id="explanation"></p>
   </div>
   <script>
-    const originalQuestions = [
-      { question: "What is log₁₀(1000)?", options: ["2", "3", "4", "1"], answer: "3", explanation: "log₁₀(1000) = 3 because 10³ = 1000." },
-      { question: "If log₂(x) = 5, what is x?", options: ["32", "10", "25", "64"], answer: "32", explanation: "2⁵ = 32, so x = 32." },
-      { question: "Simplify: log₃(81)", options: ["4", "3", "2", "5"], answer: "4", explanation: "log₃(81) = 4 because 3⁴ = 81." },
-      { question: "logₐ(a⁷) = ?", options: ["1", "a", "7", "a⁷"], answer: "7", explanation: "logₐ(a⁷) = 7 by logarithmic identity." },
-      { question: "What is log₁₀(1)?", options: ["0", "1", "10", "-1"], answer: "0", explanation: "log₁₀(1) = 0 because 10⁰ = 1." },
-      { question: "If log₅(25) = x, what is x?", options: ["1", "2", "3", "4"], answer: "2", explanation: "5² = 25, so x = 2." },
-      { question: "Simplify: log₂(8) + log₂(4)", options: ["3", "4", "5", "6"], answer: "5", explanation: "log₂(8)=3 and log₂(4)=2. 3 + 2 = 5." },
-      { question: "What is the value of log₁₀(100)?", options: ["1", "10", "2", "3"], answer: "2", explanation: "log₁₀(100) = 2 because 10² = 100." },
-      { question: "If log₄(64) = x, what is x?", options: ["2", "4", "3.5", "3"], answer: "3", explanation: "4³ = 64, so x = 3." }
-    ];
+    function generateRandomQuestion() {
+      const types = [
+        () => {
+          let base = 10, power = Math.floor(Math.random() * 4 + 1);
+          let value = Math.pow(base, power);
+          return {
+            question: What is log base 10 of ${value}?,
+            options: shuffle([power, power + 1, power - 1, power + 2]).map(String),
+            answer: String(power),
+            explanation: log base 10 of ${value} is ${power} because 10^${power} = ${value}.
+          };
+        },
+        () => {
+          let base = 2 + Math.floor(Math.random() * 4);
+          let exponent = 1 + Math.floor(Math.random() * 4);
+          let result = Math.pow(base, exponent);
+          return {
+            question: If log base ${base} of ${result} = x, what is x?,
+            options: shuffle([exponent, exponent + 1, exponent - 1, exponent + 2]).map(String),
+            answer: String(exponent),
+            explanation: ${base}^${exponent} = ${result}, so x = ${exponent}.
+          };
+        },
+        () => {
+          let base = 3, exponent = 2 + Math.floor(Math.random() * 2);
+          let val = Math.pow(base, exponent);
+          return {
+            question: Simplify: log base 3 of ${val},
+            options: shuffle([exponent, exponent + 1, exponent - 1, exponent + 2]).map(String),
+            answer: String(exponent),
+            explanation: log base 3 of ${val} is ${exponent} because 3^${exponent} = ${val}.
+          };
+        },
+        () => {
+          let a = 2 + Math.floor(Math.random() * 3);
+          let exp = 1 + Math.floor(Math.random() * 4);
+          return {
+            question: What is log base ${a} of ${a}^${exp}?,
+            options: shuffle([exp, exp + 1, exp - 1, exp + 2]).map(String),
+            answer: String(exp),
+            explanation: log base ${a} of ${a}^${exp} = ${exp} by logarithmic identity.
+          };
+        },
+        () => {
+          return {
+            question: What is log base 10 of 1?,
+            options: shuffle(["0", "1", "10", "-1"]),
+            answer: "0",
+            explanation: "log base 10 of 1 is 0 because 10⁰ = 1."
+          };
+        }
+      ];
+      return types[Math.floor(Math.random() * types.length)]();
+    }
+
+    function generateQuestionsForPlayers(playerCount) {
+      let totalQuestions = playerCount * 5;
+      let questions = [];
+      while (questions.length < totalQuestions) {
+        const q = generateRandomQuestion();
+        if (!questions.find(x => x.question === q.question)) {
+          questions.push(q);
+        }
+      }
+      return questions;
+    }
 
     let numPlayers = 2;
     let currentPlayer = 0;
@@ -116,7 +172,7 @@
       numPlayers = players;
       scores = Array(players).fill(0);
       currentPlayer = 0;
-      availableQuestions = shuffle([...originalQuestions]);
+      availableQuestions = generateQuestionsForPlayers(players);
       history = [];
       document.getElementById("setup").style.display = "none";
       document.getElementById("game").style.display = "block";
@@ -125,12 +181,11 @@
 
     function displayQuestion() {
       if (availableQuestions.length === 0) return endGame();
-      const index = Math.floor(Math.random() * availableQuestions.length);
-      const q = availableQuestions.splice(index, 1)[0];
+      const q = availableQuestions.shift();
 
       const turn = document.getElementById("turn");
-      turn.textContent = `Player ${currentPlayer + 1}'s turn`;
-      turn.className = `player${(currentPlayer % 3) + 1}`;
+      turn.textContent = Player ${currentPlayer + 1}'s turn;
+      turn.className = player${(currentPlayer % 3) + 1};
 
       document.getElementById("question").textContent = q.question;
       document.getElementById("explanation").textContent = "";
@@ -170,7 +225,7 @@
                       : percent >= 70 ? "🔥 Great job! Keep practicing and you'll master it."
                       : "📚 Review and try again. Learning takes time!";
 
-      let scoreHTML = scores.map((score, i) => `<p>Player ${i + 1} Score: ${score}</p>`).join("");
+      let scoreHTML = scores.map((score, i) => <p>Player ${i + 1} Score: ${score}</p>).join("");
       const winner = getWinners();
 
       document.getElementById("game").innerHTML = `
@@ -186,8 +241,8 @@
 
     function getWinners() {
       const maxScore = Math.max(...scores);
-      const winners = scores.map((s, i) => s === maxScore ? `Player ${i + 1}` : null).filter(Boolean);
-      return winners.length === 1 ? `${winners[0]} wins!` : `It's a tie between: ${winners.join(" & ")}`;
+      const winners = scores.map((s, i) => s === maxScore ? Player ${i + 1} : null).filter(Boolean);
+      return winners.length === 1 ? ${winners[0]} wins! : It's a tie between: ${winners.join(" & ")};
     }
 
     function reviewAnswers() {
