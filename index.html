@@ -27,7 +27,7 @@
       z-index: -1;
     }
 
-    #game {
+    #game, #setup {
       background: rgba(255, 255, 255, 0.05);
       padding: 25px;
       border-radius: 20px;
@@ -83,6 +83,19 @@
       margin-top: 10px;
     }
 
+    .player1 {
+      color: #ffd700;
+      text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700;
+    }
+    .player2 {
+      color: #ff69b4;
+      text-shadow: 0 0 5px #ff69b4, 0 0 10px #ff69b4;
+    }
+    .player3 {
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+    }
+
     @media (max-width: 600px) {
       h1, h2 {
         font-size: 1.5rem;
@@ -100,13 +113,21 @@
   </style>
 </head>
 <body>
-  <div id="game">
+  <div id="setup">
+    <h1>Logarithm Multiplayer Game</h1>
+    <p>Select number of players (2 or 3):</p>
+    <button onclick="startGame(2)">2 Players</button>
+    <button onclick="startGame(3)">3 Players</button>
+  </div>
+
+  <div id="game" style="display: none;">
     <h1>Logarithm Multiplayer Game</h1>
     <p id="turn"></p>
     <p id="question"></p>
     <div id="options"></div>
     <p id="explanation"></p>
   </div>
+
   <script>
     const questions = [
       {
@@ -165,19 +186,30 @@
       }
     ];
 
+    let numPlayers = 2;
     let currentPlayer = 0;
-    let scores = [0, 0];
+    let scores = [];
     let currentQuestion = 0;
     let history = [];
 
+    function startGame(players) {
+      numPlayers = players;
+      scores = Array(players).fill(0);
+      document.getElementById("setup").style.display = "none";
+      document.getElementById("game").style.display = "block";
+      displayQuestion();
+    }
+
     function displayQuestion() {
       const q = questions[currentQuestion];
+      const turn = document.getElementById("turn");
+      turn.textContent = `Player ${currentPlayer + 1}'s turn`;
+      turn.className = `player${(currentPlayer % 3) + 1}`;
       document.getElementById("question").textContent = q.question;
-      document.getElementById("turn").textContent = `Player ${currentPlayer + 1}'s turn`;
       document.getElementById("explanation").textContent = "";
+
       const options = document.getElementById("options");
       options.innerHTML = "";
-
       q.options.forEach(opt => {
         const btn = document.createElement("button");
         btn.textContent = opt;
@@ -198,12 +230,12 @@
       });
 
       if (option === correct) scores[currentPlayer]++;
-      history.push({ ...q, chosen: option, correct });
+      history.push({ ...q, chosen: option, correct, player: currentPlayer + 1 });
 
       document.getElementById("explanation").textContent = q.explanation;
 
       setTimeout(() => {
-        currentPlayer = (currentPlayer + 1) % 2;
+        currentPlayer = (currentPlayer + 1) % numPlayers;
         currentQuestion++;
         if (currentQuestion >= questions.length) {
           endGame();
@@ -215,30 +247,38 @@
 
     function endGame() {
       const total = questions.length;
-      const [p1, p2] = scores;
-      const percent = Math.round(((p1 + p2) / (2 * total)) * 100);
+      const percent = Math.round((scores.reduce((a, b) => a + b, 0) / (numPlayers * total)) * 100);
       const message = percent === 100
         ? "🌟 Perfect Score! You’re a logarithm master!"
         : percent >= 70
         ? "🔥 Great job! Keep practicing and you’ll master it."
         : "📚 Review and try again. Learning takes time!";
 
+      let scoreHTML = scores.map((score, i) =>
+        `<p>Player ${i + 1} Score: ${score} / ${total}</p>`).join("");
+
+      const winner = getWinners();
       document.getElementById("game").innerHTML = `
         <h2>Game Over</h2>
-        <p>Player 1 Score: ${p1} / ${total}</p>
-        <p>Player 2 Score: ${p2} / ${total}</p>
+        ${scoreHTML}
         <p><strong>Total Mastery: ${percent}%</strong></p>
-        <p>${p1 === p2 ? "It's a tie!" : p1 > p2 ? "Player 1 wins!" : "Player 2 wins!"}</p>
+        <p>${winner}</p>
         <p>${message}</p>
         <button onclick="location.reload()">Try Again</button>
         <button onclick="reviewAnswers()">Review Questions</button>
       `;
     }
 
+    function getWinners() {
+      const maxScore = Math.max(...scores);
+      const winners = scores.map((s, i) => s === maxScore ? `Player ${i + 1}` : null).filter(Boolean);
+      return winners.length === 1 ? `${winners[0]} wins!` : `It's a tie between: ${winners.join(" & ")}`;
+    }
+
     function reviewAnswers() {
       const review = history.map((q, i) => `
-        <p><strong>Q${i+1}: ${q.question}</strong><br/>
-        Your answer: ${q.chosen} ${q.chosen === q.correct ? "✅" : "❌"}<br/>
+        <p><strong>Q${i + 1}: ${q.question}</strong><br/>
+        Player ${q.player} answered: ${q.chosen} ${q.chosen === q.correct ? "✅" : "❌"}<br/>
         Correct answer: ${q.correct}<br/>
         <em>${q.explanation}</em></p>
         <hr/>
@@ -250,7 +290,9 @@
       `;
     }
 
-    window.onload = displayQuestion;
+    window.onload = () => {
+      document.getElementById("game").style.display = "none";
+    };
   </script>
 </body>
 </html>
