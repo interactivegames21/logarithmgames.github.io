@@ -10,7 +10,7 @@
       background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
       color: #ffffff;
       text-align: center;
-      padding: 50px;
+      padding: 30px 20px;
       margin: 0;
       overflow-x: hidden;
     }
@@ -29,10 +29,11 @@
 
     #game {
       background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
+      padding: 25px;
       border-radius: 20px;
       box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
       max-width: 600px;
+      width: 90vw;
       margin: auto;
       backdrop-filter: blur(8px);
     }
@@ -40,10 +41,11 @@
     h1, h2 {
       color: #00ffe5;
       text-shadow: 0 0 5px #00ffe5, 0 0 10px #00ffe5;
+      font-size: 2rem;
     }
 
     p {
-      font-size: 18px;
+      font-size: 1.1rem;
     }
 
     button {
@@ -51,12 +53,15 @@
       color: white;
       border: none;
       border-radius: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 10px auto; /* Reduced margin */
+      padding: 14px 24px;
+      font-size: 1rem;
+      margin: 12px auto;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(30, 144, 255, 0.4);
       transition: background-color 0.3s, transform 0.2s;
+      width: 80%;
+      max-width: 300px;
+      display: block;
     }
 
     button:hover {
@@ -65,8 +70,22 @@
     }
 
     .option-button {
-      display: block;
-      margin: 12px auto;
+      margin: 14px auto;
+    }
+
+    @media (max-width: 600px) {
+      h1, h2 {
+        font-size: 1.5rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 12px 20px;
+      }
     }
   </style>
 </head>
