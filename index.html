@@ -69,8 +69,18 @@
       transform: scale(1.05);
     }
 
-    .option-button {
-      margin: 14px auto;
+    .correct {
+      background-color: #28a745 !important;
+    }
+
+    .incorrect {
+      background-color: #dc3545 !important;
+    }
+
+    #explanation {
+      font-style: italic;
+      color: #b3f0ff;
+      margin-top: 10px;
     }
 
     @media (max-width: 600px) {
@@ -95,59 +105,148 @@
     <p id="turn"></p>
     <p id="question"></p>
     <div id="options"></div>
+    <p id="explanation"></p>
   </div>
   <script>
     const questions = [
-      { question: "What is log₁₀(1000)?", options: ["2", "3", "4", "1"], answer: "3" },
-      { question: "If log₂(x) = 5, what is x?", options: ["32", "10", "25", "64"], answer: "32" },
-      { question: "Simplify: log₃(81)", options: ["4", "3", "2", "5"], answer: "4" },
-      { question: "logₐ(a⁷) = ?", options: ["1", "a", "7", "a⁷"], answer: "7" },
-      { question: "What is log₁₀(1)?", options: ["0", "1", "10", "-1"], answer: "0" },
-      { question: "If log₅(25) = x, what is x?", options: ["1", "2", "3", "4"], answer: "2" },
-      { question: "Simplify: log₂(8) + log₂(4)", options: ["3", "4", "5", "6"], answer: "5" },
-      { question: "What is the value of log₁₀(100)?", options: ["1", "10", "2", "3"], answer: "2" },
-      { question: "If log₄(64) = x, what is x?", options: ["2", "4", "3.5", "3"], answer: "3" }
+      {
+        question: "What is log₁₀(1000)?",
+        options: ["2", "3", "4", "1"],
+        answer: "3",
+        explanation: "log₁₀(1000) = 3 because 10³ = 1000."
+      },
+      {
+        question: "If log₂(x) = 5, what is x?",
+        options: ["32", "10", "25", "64"],
+        answer: "32",
+        explanation: "2⁵ = 32, so x = 32."
+      },
+      {
+        question: "Simplify: log₃(81)",
+        options: ["4", "3", "2", "5"],
+        answer: "4",
+        explanation: "log₃(81) = 4 because 3⁴ = 81."
+      },
+      {
+        question: "logₐ(a⁷) = ?",
+        options: ["1", "a", "7", "a⁷"],
+        answer: "7",
+        explanation: "logₐ(a⁷) = 7 by logarithmic identity."
+      },
+      {
+        question: "What is log₁₀(1)?",
+        options: ["0", "1", "10", "-1"],
+        answer: "0",
+        explanation: "log₁₀(1) = 0 because 10⁰ = 1."
+      },
+      {
+        question: "If log₅(25) = x, what is x?",
+        options: ["1", "2", "3", "4"],
+        answer: "2",
+        explanation: "5² = 25, so x = 2."
+      },
+      {
+        question: "Simplify: log₂(8) + log₂(4)",
+        options: ["3", "4", "5", "6"],
+        answer: "5",
+        explanation: "log₂(8)=3 and log₂(4)=2. 3 + 2 = 5."
+      },
+      {
+        question: "What is the value of log₁₀(100)?",
+        options: ["1", "10", "2", "3"],
+        answer: "2",
+        explanation: "log₁₀(100) = 2 because 10² = 100."
+      },
+      {
+        question: "If log₄(64) = x, what is x?",
+        options: ["2", "4", "3.5", "3"],
+        answer: "3",
+        explanation: "4³ = 64, so x = 3."
+      }
     ];
 
     let currentPlayer = 0;
     let scores = [0, 0];
     let currentQuestion = 0;
+    let history = [];
 
     function displayQuestion() {
       const q = questions[currentQuestion];
       document.getElementById("question").textContent = q.question;
+      document.getElementById("turn").textContent = `Player ${currentPlayer + 1}'s turn`;
+      document.getElementById("explanation").textContent = "";
       const options = document.getElementById("options");
       options.innerHTML = "";
+
       q.options.forEach(opt => {
         const btn = document.createElement("button");
         btn.textContent = opt;
-        btn.classList.add("option-button");
-        btn.onclick = () => selectAnswer(opt);
+        btn.onclick = () => selectAnswer(opt, btn);
         options.appendChild(btn);
       });
-      document.getElementById("turn").textContent = `Player ${currentPlayer + 1}'s turn`;
     }
 
-    function selectAnswer(option) {
-      const correct = questions[currentQuestion].answer;
-      if (option === correct) scores[currentPlayer]++;
-      currentPlayer = (currentPlayer + 1) % 2;
-      currentQuestion++;
+    function selectAnswer(option, btn) {
+      const q = questions[currentQuestion];
+      const correct = q.answer;
+      const buttons = document.querySelectorAll("#options button");
 
-      if (currentQuestion >= questions.length) {
-        endGame();
-      } else {
-        displayQuestion();
-      }
+      buttons.forEach(b => {
+        b.disabled = true;
+        if (b.textContent === correct) b.classList.add("correct");
+        if (b.textContent === option && option !== correct) b.classList.add("incorrect");
+      });
+
+      if (option === correct) scores[currentPlayer]++;
+      history.push({ ...q, chosen: option, correct });
+
+      document.getElementById("explanation").textContent = q.explanation;
+
+      setTimeout(() => {
+        currentPlayer = (currentPlayer + 1) % 2;
+        currentQuestion++;
+        if (currentQuestion >= questions.length) {
+          endGame();
+        } else {
+          displayQuestion();
+        }
+      }, 2000);
     }
 
     function endGame() {
+      const total = questions.length;
+      const [p1, p2] = scores;
+      const percent = Math.round(((p1 + p2) / (2 * total)) * 100);
+      const message = percent === 100
+        ? "🌟 Perfect Score! You’re a logarithm master!"
+        : percent >= 70
+        ? "🔥 Great job! Keep practicing and you’ll master it."
+        : "📚 Review and try again. Learning takes time!";
+
       document.getElementById("game").innerHTML = `
         <h2>Game Over</h2>
-        <p>Player 1 Score: ${scores[0]}</p>
-        <p>Player 2 Score: ${scores[1]}</p>
-        <p>${scores[0] === scores[1] ? "It's a tie!" : scores[0] > scores[1] ? "Player 1 wins!" : "Player 2 wins!"}</p>
+        <p>Player 1 Score: ${p1} / ${total}</p>
+        <p>Player 2 Score: ${p2} / ${total}</p>
+        <p><strong>Total Mastery: ${percent}%</strong></p>
+        <p>${p1 === p2 ? "It's a tie!" : p1 > p2 ? "Player 1 wins!" : "Player 2 wins!"}</p>
+        <p>${message}</p>
         <button onclick="location.reload()">Try Again</button>
+        <button onclick="reviewAnswers()">Review Questions</button>
+      `;
+    }
+
+    function reviewAnswers() {
+      const review = history.map((q, i) => `
+        <p><strong>Q${i+1}: ${q.question}</strong><br/>
+        Your answer: ${q.chosen} ${q.chosen === q.correct ? "✅" : "❌"}<br/>
+        Correct answer: ${q.correct}<br/>
+        <em>${q.explanation}</em></p>
+        <hr/>
+      `).join("");
+      document.getElementById("game").innerHTML = `
+        <h2>Review Answers</h2>
+        ${review}
+        <button onclick="location.reload()">Play Again</button>
       `;
     }
 
